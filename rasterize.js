@@ -27,6 +27,7 @@ var translateMatrix = mat4.create();
 var translateVec = vec3.create();
 var rotateVec = vec3.create();
 
+var lightLoc = vec3.fromValues(-1,3,-0.5);
 
 // ASSIGNMENT HELPER FUNCTIONS
 
@@ -85,7 +86,7 @@ function getColor(coord, index) {
     if (inputTriangles != String.null) { 
 		// color: Ka*La + Kd*Ld*(N(\dot)L) + Ks*Ls*(N(\dot)H)^n
 		// looking at, L_'s are all 1.
-		var lightCoord = [-1-coord[0], 3-coord[1], -0.5-coord[2]];
+		var lightCoord = [lightLoc[0]-coord[0], lightLoc[1]-coord[1], lightLoc[2]-coord[2]];
 		
 		var ambColor = inputTriangles[index].material.ambient; 
 		var difColor = inputTriangles[index].material.diffuse;
@@ -94,9 +95,7 @@ function getColor(coord, index) {
 		
 		// Ambient
 		//if (coord[0] == 0.25) console.log(ambColor);
-		var ambR = ambColor[0];
-		var ambG = ambColor[1];
-		var ambB = ambColor[2];
+    var amb = vec3.fromValues(ambColor[0],ambColor[1],ambColor[2]);
 		
 		// Diffuse
 		// "up" vector
@@ -104,16 +103,16 @@ function getColor(coord, index) {
 		
 		// Normalize light source
 		var lightMag = Math.sqrt(Math.pow(lightCoord[0],2) 
-				+ Math.pow(lightCoord[1],2) 
-				+ Math.pow(lightCoord[2],2));
+                + Math.pow(lightCoord[1],2) 
+                + Math.pow(lightCoord[2],2));
 		var L = [lightCoord[0]/lightMag, lightCoord[1]/lightMag, lightCoord[2]/lightMag];
 
 		var NdotL = N[0]*L[0] + N[1]*L[1] + N[2]*L[2];
     //if (coord[0] == 0.25) console.log(L);
 		
-		var difR = difColor[0] * NdotL;
-		var difG = difColor[1] * NdotL;
-		var difB = difColor[2] * NdotL;
+    var dif = vec3.fromValues(difColor[0] * NdotL,
+                              difColor[1] * NdotL,
+                              difColor[2] * NdotL);
 		
 		//if (coord[0] == 0.25) console.log([difR,difG,difB]);
 		//if (coord[0] == 0.25) console.log(difColor);
@@ -136,14 +135,14 @@ function getColor(coord, index) {
 		
 		var NdHpn = Math.pow(N[0]*H[0] + N[1]*H[1] + N[2]*H[2], inputTriangles[index].material.n);
 
-		var spcR = spcColor[0] * NdHpn;
-		var spcG = spcColor[1] * NdHpn;
-		var spcB = spcColor[2] * NdHpn;
+    var spc = vec3.fromValues(spcColor[0] * NdHpn,
+                              spcColor[1] * NdHpn,
+                              spcColor[2] * NdHpn);
 		//if (coord[0] == 0.25) console.log([spcR,spcG,spcB]);
 
-		var r = ambR + difR + spcR;
-		var g = ambG + difG + spcG;
-		var b = ambB + difB + spcB;
+		var r = amb[0] + dif[0] + spc[0];
+		var g = amb[1] + dif[1] + spc[1];
+		var b = amb[2] + dif[2] + spc[2];
 				
     //if (coord[0] == 0.25) console.log([r*255,g*255,b*255]);
 		//return [1.0, 1.0, 1.0, 1.0];
